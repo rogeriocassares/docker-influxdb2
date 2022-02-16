@@ -1,0 +1,2 @@
+influxdb2/var/lib/*
+!influxdb2/var/lib/README.md

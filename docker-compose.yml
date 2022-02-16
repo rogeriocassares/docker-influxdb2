@@ -1,0 +1,45 @@
+version: "3"
+services:
+    influxdb:
+        container_name: influxdb2
+        restart: always
+        build:
+            context: ./influxdb2/build
+            dockerfile: Dockerfile
+        environment:
+            DOCKER_INFLUXDB_INIT_MODE: setup
+            DOCKER_INFLUXDB_INIT_USERNAME: my-user
+            DOCKER_INFLUXDB_INIT_PASSWORD: my-password
+            DOCKER_INFLUXDB_INIT_ORG: my-org
+            DOCKER_INFLUXDB_INIT_BUCKET: users_business_events
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my-bucket
+            DOCKER_INFLUXDB_INIT_RETENTION: 1w
+        volumes:
+        # Mount for influxdb data directory and configuration
+            - ./influxdb2/var/lib:/var/lib/influxdb2
+            - ./influxdb2/etc:/etc/influxdb2
+        ports:
+            - 8086:8086
+        networks:
+            - influxdb2-network
+            
+    telegraf:
+        container_name: telegraf
+        restart: always
+        build:
+            context: ./telegraf/build
+            dockerfile: Dockerfile
+        volumes:
+            - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf
+        depends_on:
+            - influxdb
+        ports:
+            - 8125:8125
+        links:
+            - influxdb
+        networks:
+            - influxdb2-network
+
+networks:
+    influxdb2-network:
+        driver: bridge
